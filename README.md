@@ -4,12 +4,13 @@
 A simple user authentication template.
 
 #### Features:
-* User -> Registration | Login | Logout
-* Authenticated Sessions using Tokens
+* * User -> Registration | Login | Logout
+* * Authenticated Sessions using Tokens
 
-Upon registering, user credintials and a newly generated authentication token are stored to the database and the token is returned.
-Upon login, an authentication token is generated and is saved to the database (replaces previous token if existing).
-Upon logout, the authentication token is erased from the database making it invalid if used in a request.
+
+* Upon registering, user credintials and a newly generated authentication token are stored to the database and the token is returned.
+* Upon login, an authentication token is generated and is saved to the database (replaces previous token if existing).
+* Upon logout, the authentication token is erased from the database making it invalid if used in a request.
 
 A decorator is provied, `@authenticated_session`, that returns a user connected to the database if a valid authentication token is given. This simplifies handling requests that may require a user to be authenticated (logged in).
 
@@ -30,14 +31,28 @@ SECRET_KEY=91b47920cca5d2fce10d4096f90c0e69eceae11e0c537a263e22ff11cbacdf34c0049
 ```
 
 ### Setup and configure the database
-
+Initialize, migrate and update the database.
+```
+flask db init
+flask db migrate
+flask db upgrade
+```
 
 #
 
 
 ## Start
 
+```
+flask run
+```
+
 #
+
+# API Testing w/ Postman
+Postman is an application that make interacting with an API easy and is great tool for API development.
+A `postman collection` has been provided in this repo. 
+Import the collection into the postman application and test the running Flask API
 
 ## Deploy
 
