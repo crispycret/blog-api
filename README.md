@@ -1,4 +1,4 @@
-# flask-user-auth: Flak Based User Authentication Template.
+# flask-user-auth: Flask Based User Authentication Template.
 
 ## Introduction
 A simple user authentication template.
