@@ -32,7 +32,7 @@ Create a virtual enviornment to run the application in and install the required 
 ```
 python -m venv env
 source env/bin/activate
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 
