@@ -44,6 +44,9 @@ migrate = Migrate(app, db, render_as_batch=True)
 from .user_auth import user_auth as user_auth_blueprint
 app.register_blueprint(user_auth_blueprint)
 
+from .blog import blog as blog_blueprint
+app.register_blueprint(blog_blueprint)
+
 
 # import the core application views
 from core import views
