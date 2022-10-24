@@ -8,6 +8,7 @@ class Post(db.Model):
     __tablename__ = 'post'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     title = db.Column(db.String(126), unique=True, nullable=False)
     body = db.Column(db.LargeBinary, nullable=False)
     created_at = db.Column(db.DateTime(), nullable=False)
@@ -62,9 +63,10 @@ class Post(db.Model):
 class Comment(db.Model):
     ''' Comment of a post. '''
 
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime(), nullable=False)
     updated_at = db.Column(db.DateTime(), nullable=True)

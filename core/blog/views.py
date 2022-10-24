@@ -1,6 +1,8 @@
 import datetime
 from flask import request
 
+from core.user_auth.utils import require_admin, require_token
+
 from .. import db
 
 from . import blog
@@ -11,12 +13,11 @@ from . import models
 
 
 @blog.route("/post/create", methods=['POST'])
-def create_post():
+@require_admin
+def create_post(admin, token):
     ''' Create a blog post and save to the database. '''
     data = request.get_json()
-
-    print(data)
-
+    data['user_id'] = admin.id
     try:
         post = models.Post.create(data)
         db.session.add(post)
@@ -42,7 +43,8 @@ def get_post(id):
 
 
 @blog.route('/post/<id>/delete', methods=['DELETE'])
-def delete_post(id):
+@require_admin
+def delete_post(id, admin, token):
     ''' remove a blog post from the database '''
     try:
         post = models.Post.query.filter_by(id=id).first()
@@ -57,7 +59,8 @@ def delete_post(id):
 
 
 @blog.route('/post/<id>/update', methods=['PATCH'])
-def update_post(id):
+@require_admin
+def update_post(id, admin, token):
     ''' update an existing blog post '''
     data = request.get_json()
     
@@ -81,7 +84,8 @@ def update_post(id):
 
 
 @blog.route('/post/<post_id>/comment/create', methods=['POST'])
-def create_comment(post_id):
+@require_token
+def create_comment(post_id, user, token):
     ''' Create a new comment for a given post '''
     data = request.get_json()
     data['post_id'] = post_id
@@ -110,7 +114,8 @@ def get_comment(post_id, id):
 
 
 @blog.route('/post/<post_id>/comment/<id>/update', methods=['PATCH'])
-def update_comment(post_id, id):
+@require_token
+def update_comment(post_id, id, user, token):
     ''' Update the comment with the matching post_id and id '''
     data = request.get_json()
 
@@ -129,7 +134,8 @@ def update_comment(post_id, id):
 
 
 @blog.route('/post/<post_id>/comment/<id>/delete', methods=['DELETE'])
-def delete_comment(post_id, id):
+@require_token
+def delete_comment(post_id, id, user, token):
     ''' delete the comment with matching post_id and id '''
     try:
         comment = models.Comment.query.filter_by(post_id=post_id, id=id).first()
