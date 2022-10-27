@@ -49,7 +49,7 @@ class Token(db.Model):
     @staticmethod
     def exists(token):
         ''' Return True or False for if the token is stored in the database'''
-        return Token.query.filter_by(token=token) != None
+        return Token.query.filter_by(token=token).first()
 
     @staticmethod
     def decode_token(token):

@@ -1,5 +1,6 @@
 
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
@@ -18,8 +19,11 @@ from config import Configuration
 # Create the flask application instance
 app = Flask(__name__)
 
+CORS(app)
+
 # Register application configuration settings
 app.config.from_object(Configuration)
+
 
 # Create the database connection and register the application
 db = SQLAlchemy(app)

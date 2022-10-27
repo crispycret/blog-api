@@ -109,7 +109,7 @@ def login():
         db.session.add(token)
         db.session.commit()
 
-        response = {'Authorization': token.token}
+        response = {'Authorization': token.token, 'user': user.serialize}
         return {'status': 200, 'msg': 'login success', 'body': response}
     except Exception as e:
         return {'status': 400, 'msg': 'login failed', 'body': str(e)}
@@ -124,9 +124,15 @@ def logout(user, token):
     The user variable is provided by the @authenticated_session decorator.
     ''' 
     try:
-        # nullify the authentication token in the database.
-        if (not models.Token.exists(token)):
-            return {'status': 400, 'msg': 'token does not exist', 'body': {}}
+        try:
+            # nullify the authentication token in the database.
+            token = models.Token.exists(token)
+            if (not token):
+                return {'status': 400, 'msg': 'token does not exist', 'body': {}}
+        except Exception as e:
+            return {'status': 400, 'msg': 'token does not exist', 'body': str(e)}
+
+
 
         db.session.delete(token)
         db.session.commit()
