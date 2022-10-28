@@ -46,11 +46,11 @@ def create_admin():
     # Verify application secret key
     token = request.headers['Authorization']
     data = jwt.decode(token, Configuration.ADMIN_SECRET_KEY, 'HS256')
-    print (data)
+    
     try:
         user = models.User.create(data['email'], data['password'])
         user.is_admin = True
-        print(user.serialize)
+
         db.session.add(user)
         db.session.commit()
         return {'status': 200, 'msg': 'created admin', 'body': user.serialize}
@@ -131,7 +131,6 @@ def logout(user, token):
                 return {'status': 400, 'msg': 'token does not exist', 'body': {}}
         except Exception as e:
             return {'status': 400, 'msg': 'token does not exist', 'body': str(e)}
-
 
 
         db.session.delete(token)

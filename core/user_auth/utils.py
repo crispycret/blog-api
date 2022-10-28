@@ -45,14 +45,12 @@ def require_admin(f):
     ''' Decorator to restrict access to admins only. '''
     @wraps (f)
     def func(*args, **kwargs):
-        print('require_admin()')
         if ('Authorization' not in request.headers):
             return KeyError('Authentication token missing')
 
         token = request.headers.get('Authorization')
-        print(f'token: {token}')
         user = models.User.validate_token(token)
-        print (f'User: {user}')
+
         if (not user.is_admin):
             return ValueError("User is not an admin")
 

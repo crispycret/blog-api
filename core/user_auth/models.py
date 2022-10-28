@@ -64,6 +64,7 @@ class Token(db.Model):
         ''' Return True or False for if the encoded token is valid. '''
         data = Token.decode_token(token)
         time_left = data['expires'].timestamp() - now().timestamp()
+
         if (time_left <= 0):
             return False
         return True
@@ -112,6 +113,7 @@ class User(db.Model):
             'created': created.isoformat(),
             'expires': expires.isoformat(),
         }
+
         token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
         token = Token(user_id=self.id, token=token)
         return token
@@ -119,6 +121,7 @@ class User(db.Model):
     def remove_invalid_tokens(self):
         ''' Purge any invalid tokens stored in the database for the user '''
         tokens = Token.query.filter_by(user_id=self.id).all()
+        
         for token in tokens:
             if (not Token.is_valid(token.token)):
                 db.session.delete(token)
@@ -145,9 +148,6 @@ class User(db.Model):
     def validate_token(token):
         ''' decode the token and return the corresponding user if the token is valid. '''
         # Rename to get_by_token() or from_token()
-        print ('validate_token()')
-        data = Token.decode_token(token)
-        print (f'data: {data}')
 
         if (not Token.is_valid(token)):
             return None
@@ -155,8 +155,11 @@ class User(db.Model):
         if (not Token.exists(token)):
             return None
 
+        data = Token.decode_token(token)
+        
         # return the user if the token is valid
         return User.query.filter_by(public_id=data['public_id']).first()
+
 
 
     @staticmethod
