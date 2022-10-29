@@ -1,5 +1,4 @@
 
-from github import Github
 from core import app
 from config import Configuration
 
