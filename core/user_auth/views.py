@@ -117,22 +117,20 @@ def login():
 
 
 @user_auth.route('/logout', methods=['POST'])
-@require_token
-def logout(user, token):
+def logout():
     '''
     Revoke's the session authentication token's validity.
     The user variable is provided by the @authenticated_session decorator.
     ''' 
+    token = request.headers.get('Authorization')
     try:
-        try:
-            # nullify the authentication token in the database.
-            token = models.Token.exists(token)
-            if (not token):
-                return {'status': 400, 'msg': 'token does not exist', 'body': {}}
-        except Exception as e:
-            return {'status': 400, 'msg': 'token does not exist', 'body': str(e)}
+        # nullify the authentication token in the database.
+        token = models.Token.exists(token)
+        if (not token): return {'status': 409, 'msg': 'token does not exist', 'body': {}}
+    except Exception as e:
+        return {'status': 400, 'msg': 'failed to remove token on token exists check', 'body': str(e)}
 
-
+    try:
         db.session.delete(token)
         db.session.commit()
         return {'status': 200, 'msg': 'token removed', 'body': {}}

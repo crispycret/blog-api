@@ -16,8 +16,19 @@ from . import models
 @require_admin
 def create_post(admin, token):
     ''' Create a blog post and save to the database. '''
+
     data = request.get_json()
     data['user_id'] = admin.id
+
+    # // Before creating the post check to see if the title is unique
+    try:
+        post = models.Post.query.filter_by(title=data['title']).first()
+        if (post):
+            return {'status': 409, 'msg': 'post not created', 'body': "Post with the same title already exists"}
+    except Exception as e:
+        # Not expecting an error yet
+        return {'status': 400, 'msg': 'post not created', 'body': str(e)}
+
     try:
         post = models.Post.create(data)
         db.session.add(post)
@@ -27,6 +38,17 @@ def create_post(admin, token):
         return {'status': 400, 'msg': 'post not created', 'body': str(e)}
 
 
+@blog.route('/post/all')
+def get_posts():
+    ''' Get all posts. Use pagenativation was database gets large. '''
+    # Implement pagnagation
+    posts = models.Post.query.order_by(models.Post.created_at.desc()).limit(10) #.all()
+
+    # Hide private posts unless requester provides admin authentication token.
+    posts = [post.serialize for post in posts]
+    count = len(posts)
+    data = {'posts': posts}
+    return {'status': 200, 'msg': f'{count} posts found', 'body': data} 
 
 
 @blog.route('/post/<id>', methods=['GET'])
