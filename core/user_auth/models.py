@@ -140,7 +140,9 @@ class User(db.Model):
             return True
         except Exception as e:
             return False
-
+            
+            
+            
     @staticmethod
     def create(email, password):
         ''' Create a new user with a unique public id and has the password. '''
