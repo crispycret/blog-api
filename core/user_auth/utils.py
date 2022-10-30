@@ -50,6 +50,8 @@ def require_admin(f):
 
         token = request.headers.get('Authorization')
         user = models.User.validate_token(token)
+        if (not user):
+            return ValueError("User was not found")
 
         if (not user.is_admin):
             return ValueError("User is not an admin")
