@@ -99,7 +99,7 @@ def login():
             return {'status': 400, 'msg': 'login failed: password incorrect', 'body': {}}
 
         try:
-            user.remove_invalid_tokens()    
+            user.remove_expired_tokens()    
         except Exception as e:
             return {'status': 400, 'msg': 'could not remove expired tokens', 'body': str(e)}
 
@@ -169,7 +169,7 @@ def get_all_users(admin, token):
         users = [user.serialize for user in models.User.query.all()]
         return {'status': 200, 'msg': 'retrieved all users', 'body': {'users': users}}
     except Exception as e:
-        return {'status': 400, 'msg': 'failed to remove token', 'body': str(e)}
+        return {'status': 400, 'msg': 'failed to retrieve all users', 'body': str(e)}
     
 
 
