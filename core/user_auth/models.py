@@ -119,13 +119,15 @@ class User(db.Model):
     
     def remove_expired_tokens(self):
         ''' Purge any invalid tokens stored in the database for the user '''
-        tokens = Token.query.filter_by(user_id=self.id).all()
-        for token in tokens:
-            if (Token.has_expired(token.token)):
-                db.session.delete(token)
-        db.session.commit()
-        return True
-
+        try:
+            tokens = Token.query.filter_by(user_id=self.id).all()
+            for token in tokens:
+                if (Token.has_expired(token.token)):
+                    db.session.delete(token)
+            db.session.commit()
+            return True
+        except Exception as e:
+            return False
 
     @staticmethod
     def create(email, password):
