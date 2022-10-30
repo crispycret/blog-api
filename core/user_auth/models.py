@@ -122,7 +122,7 @@ class User(db.Model):
         try:
             encoded_token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
         except Exception as e:
-            raise Exception(f"Failure encoding token dictionary token: {token}")
+            raise Exception(f"Failure encoding token dictionary secret_key: {Configuration.SECRET_KEY == None}")
 
         try:
             token = Token(user_id=self.id, token=encoded_token)
