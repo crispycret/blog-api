@@ -47,24 +47,23 @@ class Token(db.Model):
         }
 
     @staticmethod
-    def exists(token):
+    def exists(encoded_token):
         ''' Return True or False for if the token is stored in the database'''
-        return Token.query.filter_by(token=token).first()
+        return Token.query.filter_by(token=encoded_token).first()
 
     @staticmethod
-    def decode_token(token):
+    def decode_token(encoded_token):
         ''' Decode the token string and return a token object '''
-        data = jwt.decode(token, Configuration.SECRET_KEY, 'HS256')
+        data = jwt.decode(encoded_token, Configuration.SECRET_KEY, 'HS256')
         data['created'] = datetime.datetime.fromisoformat(data['created'])
         data['expires'] = datetime.datetime.fromisoformat(data['expires'])
         return data
 
     @staticmethod
-    def is_valid(token):
+    def has_expired(encoded_token):
         ''' Return True or False for if the encoded token is valid. '''
-        data = Token.decode_token(token)
-        time_left = data['expires'].timestamp() - now().timestamp()
-
+        token_data = Token.decode_token(encoded_token)
+        time_left = token_data['expires'].timestamp() - now().timestamp()
         if (time_left <= 0):
             return False
         return True
@@ -106,7 +105,7 @@ class User(db.Model):
         ''' Generate an authentication token for the user. '''
         created = now()
         if (not expires):
-            expires = created + datetime.timedelta(month=1)
+            expires = created + datetime.timedelta(day=1)
 
         token = {
             'public_id': self.public_id,
@@ -114,18 +113,16 @@ class User(db.Model):
             'expires': expires.isoformat(),
         }
 
-        token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
-        token = Token(user_id=self.id, token=token)
+        encoded_token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
+        token = Token(user_id=self.id, token=encoded_token)
         return token
     
-    def remove_invalid_tokens(self):
+    def remove_expired_tokens(self):
         ''' Purge any invalid tokens stored in the database for the user '''
         tokens = Token.query.filter_by(user_id=self.id).all()
-        
         for token in tokens:
-            if (not Token.is_valid(token.token)):
+            if (Token.has_expired(token.token)):
                 db.session.delete(token)
-        
         db.session.commit()
         return True
 
@@ -145,15 +142,17 @@ class User(db.Model):
         return User(**data)
 
     @staticmethod
-    def validate_token(token):
+    def validate_token(encoded_token):
         ''' decode the token and return the corresponding user if the token is valid. '''
+
+        if (Token.has_expired(encoded_token)): return None
+        if (not Token.exists(token)): return None
+
         # Rename to get_by_token() or from_token()
+        data = Token.decode_token(encoded_token)
 
-        if (not Token.is_valid(token)):
-            return None
-
-        if (not Token.exists(token)):
-            return None
+        # token = Token.query.join(Token, User).filter(User.public_id=data['public_id'] and Token.token=encoded_token)
+        token = Token.query.join(Token, User).filter(User.public_id == data['public_id']).filter(Token.token==encoded_token).first()
 
         data = Token.decode_token(token)
         
