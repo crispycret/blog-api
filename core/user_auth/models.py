@@ -103,12 +103,10 @@ class User(db.Model):
 
     def generate_token(self, expires=None):
         ''' Generate an authentication token for the user. '''
-        try:
-            created = now()
-            if (not expires):
-                expires = created + datetime.timedelta(day=1)
-        except Exception as e:
-            raise Exception("Failure creating timestamps")
+
+        created = now()
+        if (not expires):
+            expires = created + datetime.timedelta(day=1)
 
         try:
             token = {
@@ -122,7 +120,7 @@ class User(db.Model):
         try:
             encoded_token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
         except Exception as e:
-            raise Exception(f"Failure encoding token dictionary secret_key: {Configuration.SECRET_KEY == None}")
+            raise Exception(f"Failure encoding token dictionary secret_key is null: {Configuration.SECRET_KEY == None}")
 
         try:
             token = Token(user_id=self.id, token=encoded_token)

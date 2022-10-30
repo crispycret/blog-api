@@ -92,37 +92,31 @@ def login():
         # Verify user exists
     
         user = models.User.exists(data['email'])
+
         if (not user):
             return {'status': 400, 'msg': 'login failed: no user exits with provided email', 'body': {}}
         
         if (not user.verify_password(data['password'])):
             return {'status': 400, 'msg': 'login failed: password incorrect', 'body': {}}
 
-        try:
-            user.remove_expired_tokens()    
-        except Exception as e:
-            return {'status': 400, 'msg': 'could not remove expired tokens', 'body': str(e)}
 
-        try:
-            expires = datetime.datetime.now() + datetime.timedelta(days=1)
-        except Exception as e:
-            return {'status': 400, 'msg': 'could not create expires time', 'body': str(e)}
+        try: user.remove_expired_tokens()    
+        except Exception as e: pass
+
+        expires = datetime.datetime.now() + datetime.timedelta(days=1)
         
         try:
             token = user.generate_token(expires=expires)
         except Exception as e:
-            return {'status': 400, 'msg': 'could not generate token', 'body': str(e)}
+            return {'status': 400, 'msg': 'could not generate token', 'body': {}}
 
         try:
             db.session.add(token)
             db.session.commit()
         except Exception as e:
-            return {'status': 400, 'msg': 'could not add token to database', 'body': str(e)}
+            return {'status': 400, 'msg': 'could not add token to database', 'body': {}}
 
-        try:
-            response = {'Authorization': token.token, 'user': user.serialize}
-        except Exception as e:
-            return {'status': 400, 'msg': 'could not create response', 'body': str(e)}
+        response = {'Authorization': token.token, 'user': user.serialize}
         
         return {'status': 200, 'msg': 'login success', 'body': response}
     except Exception as e:
