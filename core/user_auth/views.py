@@ -92,24 +92,32 @@ def login():
         # Verify user exists
     
         user = models.User.exists(data['email'])
+
         if (not user):
             return {'status': 400, 'msg': 'login failed: no user exits with provided email', 'body': {}}
         
         if (not user.verify_password(data['password'])):
             return {'status': 400, 'msg': 'login failed: password incorrect', 'body': {}}
 
-        try:
-            user.remove_expired_tokens()    
-        except Exception as e:
-            return {'status': 400, 'msg': 'could not remove expired tokens', 'body': str(e)}
+
+        try: user.remove_expired_tokens()    
+        except Exception as e: pass
 
         expires = datetime.datetime.now() + datetime.timedelta(days=1)
-        token = user.generate_token(expires=expires)
+        
+        try:
+            token = user.generate_token(expires=expires)
+        except Exception as e:
+            return {'status': 400, 'msg': 'could not generate token', 'body': {}}
 
-        db.session.add(token)
-        db.session.commit()
+        try:
+            db.session.add(token)
+            db.session.commit()
+        except Exception as e:
+            return {'status': 400, 'msg': 'could not add token to database', 'body': {}}
 
         response = {'Authorization': token.token, 'user': user.serialize}
+        
         return {'status': 200, 'msg': 'login success', 'body': response}
     except Exception as e:
         return {'status': 400, 'msg': 'login failed', 'body': str(e)}

@@ -103,18 +103,30 @@ class User(db.Model):
 
     def generate_token(self, expires=None):
         ''' Generate an authentication token for the user. '''
+
         created = now()
         if (not expires):
             expires = created + datetime.timedelta(day=1)
 
-        token = {
-            'public_id': self.public_id,
-            'created': created.isoformat(),
-            'expires': expires.isoformat(),
-        }
+        try:
+            token = {
+                'public_id': self.public_id,
+                'created': created.isoformat(),
+                'expires': expires.isoformat(),
+            }
+        except Exception as e:
+            raise Exception("Failure creating token dictionary")
 
-        encoded_token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
-        token = Token(user_id=self.id, token=encoded_token)
+        try:
+            encoded_token = jwt.encode(token, Configuration.SECRET_KEY, 'HS256')
+        except Exception as e:
+            raise Exception(f"Failure encoding token dictionary secret_key is null: {Configuration.SECRET_KEY == None}")
+
+        try:
+            token = Token(user_id=self.id, token=encoded_token)
+        except Exception as e:
+            raise Exception("Failure creating token object")
+
         return token
     
     def remove_expired_tokens(self):
@@ -128,8 +140,9 @@ class User(db.Model):
             return True
         except Exception as e:
             return False
-
-
+            
+            
+            
     @staticmethod
     def create(email, password):
         ''' Create a new user with a unique public id and has the password. '''
