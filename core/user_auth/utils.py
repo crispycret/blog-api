@@ -46,15 +46,22 @@ def require_admin(f):
     @wraps (f)
     def func(*args, **kwargs):
         if ('Authorization' not in request.headers):
-            return KeyError('Authentication token missing')
+            raise KeyError('Authentication token missing')
 
         token = request.headers.get('Authorization')
         user = models.User.validate_token(token)
+
+        print('\n\n')
+        print(token)
+        print(user)
+        print('\n\n')
+
         if (not user):
-            return ValueError("User was not found")
+            # raise ValueError("User was not found")
+            return {'status': 404, 'msg': "User was not found with provided token.", 'body':{}}
 
         if (not user.is_admin):
-            return ValueError("User is not an admin")
+            raise ValueError("User is not an admin")
 
         kwargs['admin'] = user
         kwargs['token'] = token
