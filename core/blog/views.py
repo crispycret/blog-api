@@ -83,12 +83,15 @@ def delete_post(id, admin, token):
 @blog.route('/post/<id>/update', methods=['PATCH'])
 @require_admin
 def update_post(id, admin, token):
+# def update_post(id):
     ''' update an existing blog post '''
+
     data = request.get_json()
-    
+
     try:
         post = models.Post.query.filter_by(id=id).first()
-        if (not post): raise Exception(f'Could not find post with id {id}')
+        if (not post): 
+            return {'status': 400, 'msg': 'post not found', 'body': str(e)}
         
         post.update(data)
         

@@ -1,3 +1,4 @@
+from base64 import encode
 from enum import unique
 import uuid
 
@@ -65,8 +66,8 @@ class Token(db.Model):
         token_data = Token.decode_token(encoded_token)
         time_left = token_data['expires'].timestamp() - now().timestamp()
         if (time_left <= 0):
-            return False
-        return True
+            return True
+        return False
 
 
 
@@ -161,16 +162,18 @@ class User(db.Model):
     def validate_token(encoded_token):
         ''' decode the token and return the corresponding user if the token is valid. '''
 
-        if (Token.has_expired(encoded_token)): return None
-        if (not Token.exists(token)): return None
-
-        # Rename to get_by_token() or from_token()
-        data = Token.decode_token(encoded_token)
+        if (Token.has_expired(encoded_token)):
+            # print ("Token has expired") 
+            return None
+        if (not Token.exists(encoded_token)): 
+            # print ("Token does not exist") 
+            return None
 
         # token = Token.query.join(Token, User).filter(User.public_id=data['public_id'] and Token.token=encoded_token)
-        token = Token.query.join(Token, User).filter(User.public_id == data['public_id']).filter(Token.token==encoded_token).first()
 
-        data = Token.decode_token(token)
+        data = Token.decode_token(encoded_token)
+
+        token = Token.query.filter_by(token=encoded_token).first()
         
         # return the user if the token is valid
         return User.query.filter_by(public_id=data['public_id']).first()
