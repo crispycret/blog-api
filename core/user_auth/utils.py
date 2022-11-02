@@ -18,25 +18,21 @@ def require_token(f):
     @wraps(f)
     def func(*args, **kwargs):
         
-        REQUIRED_HEADERS = ['Authorization']
-        OPTIONAL_HEADERS = ['']
-        
-        # Validate the request has the required headers
-        for header in REQUIRED_HEADERS:
-            if (header not in request.headers.keys()):
-                raise KeyError('session authentication failed: missing required headers')
+        if ('Authorization' not in request.headers):
+            return {'status': 404, 'msg': "Authentication token not provided.", 'body':{}}
+            # raise KeyError('Authentication token missing')
             
         # Validate authentication token.
         token = request.headers.get('Authorization')
         user = models.User.validate_token(token)
         
         if (not user):
-            raise ValueError('session authentication failed: token is not valid')
+            return {'status': 404, 'msg': "User was not found with provided token.", 'body':{}}
+            # raise ValueError('session authentication failed: token is not valid')
         
-    # Implement us
-    # age limits on authenticated session (I.e. limit session/account to 100 requests per minute.)
+        # Implement us
+        # age limits on authenticated session (I.e. limit session/account to 100 requests per minute.)
         return f(*args, user=user, token=token, **kwargs)
-
     return func
 
 
@@ -46,27 +42,20 @@ def require_admin(f):
     @wraps (f)
     def func(*args, **kwargs):
         if ('Authorization' not in request.headers):
-            raise KeyError('Authentication token missing')
+            return {'status': 404, 'msg': "Authentication token not provided.", 'body':{}}
+            # raise KeyError('Authentication token missing')
 
         token = request.headers.get('Authorization')
         user = models.User.validate_token(token)
 
-        print('\n\n')
-        print(token)
-        print(user)
-        print('\n\n')
-
         if (not user):
-            # raise ValueError("User was not found")
             return {'status': 404, 'msg': "User was not found with provided token.", 'body':{}}
 
-        if (not user.is_admin):
-            raise ValueError("User is not an admin")
+        if (not user.is_admin): return {'status': 401, 'msg': "User is not an admin.", 'body':{}}
 
         kwargs['admin'] = user
         kwargs['token'] = token
         return f(*args, **kwargs)
-
     return func
 
 

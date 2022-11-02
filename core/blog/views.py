@@ -56,10 +56,17 @@ def get_post(id):
     ''' retrieve a blog post from the database '''
     try:
         post = models.Post.query.filter_by(id=id).first()
-        if (not post): raise Exception(f'Could not find post with id {id}')
+
+        if (not post): 
+            raise Exception(f'Could not find post with id {id}')
+
+        response = post.serialize                    
         return {'status': 200, 'msg': 'post found', 'body': post.serialize} 
+
     except Exception as e:
-        return {'status': 400, 'msg': 'post not found', 'body': str(e)} 
+        return {'status': 404, 'msg': 'post not found', 'body': str(e)} 
+
+  
 
 
 
