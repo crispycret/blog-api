@@ -94,14 +94,14 @@ def login():
         user = models.User.exists(data['email'])
 
         if (not user):
-            return {'status': 400, 'msg': 'login failed: no user exits with provided email', 'body': {}}
+            return {'status': 400, 'msg': 'login failed: no user exists with provided email', 'body': {}}
         
         if (not user.verify_password(data['password'])):
             return {'status': 400, 'msg': 'login failed: password incorrect', 'body': {}}
 
 
         try: user.remove_expired_tokens()    
-        except Exception as e: pass
+        except: pass
 
         expires = datetime.datetime.now() + datetime.timedelta(days=1)
         
@@ -167,6 +167,17 @@ def delete_user(user, token):
         return {'status': 200, 'msg': 'user deleted', 'body': {}}
     except Exception as e:
         return {'status': 400, 'msg': 'failed to delete user', 'body': str(e)}
+
+
+
+
+
+@user_auth.route('/token/validate')
+@require_token
+def validate (id, user, token):
+    ''' Validate the users authentication token. '''
+    # Have require_token renew the token if expiring soon?
+    return {'status': 200, 'msg': 'token is valid', 'body': {}}
 
 
 @user_auth.route('/users/all')
