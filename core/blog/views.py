@@ -182,4 +182,16 @@ def delete_comment(post_id, id, user, token):
 
 
 
+@blog.route('/post/<post_id>/comments')
+def get_comments(post_id):
+    ''' return all the comments realted to a post. '''
+    try:
+        comments = models.Comment.query.filter_by(post_id=post_id).all()
+        return {'status': 200, 'msg':f'{len(comments)} comments found', 'body': [c.serialize for c in comments]}
+    except Exception as e:
+        return {'status': 400, 'msg':'problem loading comments', 'body': str(e)}
+
+
+
+
 
