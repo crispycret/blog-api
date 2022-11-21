@@ -56,10 +56,17 @@ def get_post(id):
     ''' retrieve a blog post from the database '''
     try:
         post = models.Post.query.filter_by(id=id).first()
-        if (not post): raise Exception(f'Could not find post with id {id}')
+
+        if (not post): 
+            raise Exception(f'Could not find post with id {id}')
+
+        response = post.serialize                    
         return {'status': 200, 'msg': 'post found', 'body': post.serialize} 
+
     except Exception as e:
-        return {'status': 400, 'msg': 'post not found', 'body': str(e)} 
+        return {'status': 404, 'msg': 'post not found', 'body': str(e)} 
+
+  
 
 
 
@@ -171,6 +178,18 @@ def delete_comment(post_id, id, user, token):
         return {'status': 200, 'msg':'comment deleted', 'body': {}}
     except Exception as e:
         return {'status': 400, 'msg':'comment not deleted', 'body': str(e)}
+
+
+
+
+@blog.route('/post/<post_id>/comments')
+def get_comments(post_id):
+    ''' return all the comments realted to a post. '''
+    try:
+        comments = models.Comment.query.filter_by(post_id=post_id).all()
+        return {'status': 200, 'msg':f'{len(comments)} comments found', 'body': [c.serialize for c in comments]}
+    except Exception as e:
+        return {'status': 400, 'msg':'problem loading comments', 'body': str(e)}
 
 
 

@@ -11,6 +11,7 @@ from .. import Configuration
 
 from . import utils
 
+
 now = datetime.datetime.now
 
 def generate_public_id():
@@ -55,19 +56,23 @@ class Token(db.Model):
     @staticmethod
     def decode_token(encoded_token):
         ''' Decode the token string and return a token object '''
-        data = jwt.decode(encoded_token, Configuration.SECRET_KEY, 'HS256')
-        data['created'] = datetime.datetime.fromisoformat(data['created'])
-        data['expires'] = datetime.datetime.fromisoformat(data['expires'])
-        return data
+        try:
+            data = jwt.decode(encoded_token, Configuration.SECRET_KEY, 'HS256')
+            data['created'] = datetime.datetime.fromisoformat(data['created'])
+            data['expires'] = datetime.datetime.fromisoformat(data['expires'])
+            return data
+        except: return None
 
     @staticmethod
     def has_expired(encoded_token):
         ''' Return True or False for if the encoded token is valid. '''
-        token_data = Token.decode_token(encoded_token)
-        time_left = token_data['expires'].timestamp() - now().timestamp()
-        if (time_left <= 0):
-            return True
-        return False
+        try:
+            token_data = Token.decode_token(encoded_token)
+            time_left = token_data['expires'].timestamp() - now().timestamp()
+            if (time_left <= 0):
+                return True
+            return False
+        except: return True # default to expired true
 
 
 
